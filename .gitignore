@@ -2,6 +2,7 @@
 *.db
 *.sqlite
 *.sqpro
+*.sqbpro
 
 __pycache__/
 *.pyc
