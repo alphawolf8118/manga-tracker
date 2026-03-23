@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual B&N Parser</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-3xl font-bold text-purple-700 mb-6">Manual B&N Parser</h1>
+    <p class="text-gray-700 mb-6">
+      Paste the outerHTML of the store list modal.<br>
+      Click the button — it will parse and save automatically.
+    </p>
+
+    <form method="POST" class="space-y-6">
+      <textarea name="raw_html" rows="12" class="w-full p-4 border border-gray-300 rounded-lg font-mono text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="Paste the <div class='list-of-stores'>...</div> here"></textarea>
+
+      <button type="submit" class="bg-purple-600 text-white px-8 py-4 rounded-lg hover:bg-purple-700 text-lg font-medium">
+        Parse & Save to Volume
+      </button>
+    </form>
+
+    {% if message %}
+      <div class="mt-8 p-5 rounded-lg text-center text-lg bg-red-100 text-red-800 border border-red-300">
+        {{ message }}
+      </div>
+    {% endif %}
+
+    <p class="mt-8 text-center">
+      <a href="{{ url_for('view_series', series_id=series_id) }}" class="text-blue-600 hover:underline text-lg">
+        ← Back to Series (refresh after save)
+      </a>
+    </p>
+  </div>
+
+</body>
+</html>

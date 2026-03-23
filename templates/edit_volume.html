@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Volume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Choices.js for nice multi-select tags -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-4">
+        <h2 class="text-2xl font-bold mb-4">Edit Volume {{ volume["volume_number"] }}</h2>
+
+        <form method="post" class="space-y-4">
+            <label class="block">
+                Volume Number
+                <input type="number" name="volume_number" value="{{ volume['volume_number'] }}"
+                       class="mt-1 w-full border border-gray-300 p-2 rounded">
+            </label>
+
+            <label class="block">
+                <input type="checkbox" name="purchased" {% if volume['purchased'] %}checked{% endif %} class="mr-2">
+                Purchased
+            </label>
+
+            <label class="block">
+                Base Price
+                <input type="text" name="base_price" value="{{ "%.2f"|format(volume['base_price']|float) }}"
+                       class="mt-1 w-full border border-gray-300 p-2 rounded">
+            </label>
+
+            <label class="block">
+                Amazon Price
+                <input type="text" name="amazon_price" value="{{ "%.2f"|format(volume['amazon_price']|float) }}"
+                       class="mt-1 w-full border border-gray-300 p-2 rounded">
+            </label>
+
+            <label class="block">
+                Barnes & Noble Location
+                <input type="text" name="bn_location" value="{{ volume['bn_location'] or '' }}"
+                       class="mt-1 w-full border border-gray-300 p-2 rounded">
+            </label>
+
+            <label class="block">
+                Release Date
+                <input type="date" name="release_date" value="{{ volume['release_date'] or '' }}"
+                       class="mt-1 w-full border border-gray-300 p-2 rounded">
+            </label>
+
+            <!-- NEW: Volume Tags Dropdown (same as series) -->
+            <div>
+                <label class="block font-medium mb-1">Tags:</label>
+                <select name="tags[]" id="volume-tags-select" multiple placeholder="Select or type tags...">
+                    {% for tag, color_class in common_tags.items() %}
+                        <option value="{{ tag }}"
+                                {% if tag in (volume['tags'] or '').split(',') %}selected{% endif %}>
+                            {{ tag }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    new Choices('#volume-tags-select', {
+                        removeItemButton: true,
+                        searchEnabled: true,
+                        placeholderValue: "Select or type tags...",
+                        noResultsText: "No matching tags",
+                    });
+                });
+                </script>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    Hold Ctrl/Cmd to select multiple. Click X to remove.
+                </p>
+            </div>
+
+            <div class="flex justify-between">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded">
+                    Save Changes
+                </button>
+                <a href="{{ url_for('view_series', series_id=volume['series_id']) }}"
+                   class="text-blue-600 hover:underline self-center">
+                    ← Back
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

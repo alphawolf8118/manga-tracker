@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Volume</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Add Volume</h1>
+
+    <form action="" method="post" class="space-y-4">
+      <div>
+        <label class="block font-semibold">Volume Number</label>
+        <input type="text" name="volume_number" placeholder="e.g. 3 or 1-5" required class="border p-2 rounded w-full">
+      </div>
+
+      <div class="flex items-center">
+        <input type="checkbox" name="purchased" id="purchased" class="mr-2">
+        <label for="purchased">Purchased</label>
+      </div>
+
+      <div>
+        <label class="block font-semibold">Base Price</label>
+        <input type="number" step="0.01" name="base_price" class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Amazon Price</label>
+        <input type="number" step="0.01" name="amazon_price" class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Barnes & Noble Location</label>
+        <input type="text" name="bn_location" class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label class="block font-semibold">Release Date</label>
+        <input type="date" name="release_date" class="w-full border rounded p-2">
+      </div>
+      
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Add Volume
+      </button>
+    </form>
+
+    <div class="mt-4">
+      <a href="{{ url_for('view_series', series_id=series_id) }}" class="text-blue-600 hover:underline">
+        ← Back to Series
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>
+

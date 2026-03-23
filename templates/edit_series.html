@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Series</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+</head>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  new Choices('#tags-select', {
+    removeItemButton: true,
+    searchEnabled: true,
+    placeholderValue: "Select or type tags...",
+  });
+});
+</script>
+
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
+    <h1 class="text-2xl font-bold mb-6 text-center">✏️ Edit Series</h1>
+
+    <form method="post" class="space-y-4">
+      <div>
+        <label for="title" class="block font-medium">Title:</label>
+        <input type="text" name="title" id="title" value="{{ series['title'] }}" required
+               class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    
+      <div>
+        <label for="type" class="block font-medium">Type of Book:</label>
+        <select name="type" id="type" required
+                class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select a type</option>
+          <option value="Manga" {% if series['type'] == 'Manga' %}selected{% endif %}>Manga</option>
+          <option value="Light Novel" {% if series['type'] == 'Light Novel' %}selected{% endif %}>Light Novel</option>
+          <option value="Manhwa" {% if series['type'] == 'Manhwa' %}selected{% endif %}>Manhwa</option>
+          <option value="Webtoon" {% if series['type'] == 'Webtoon' %}selected{% endif %}>Webtoon</option>
+          <option value="Other" {% if series['type'] == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>      
+    
+      <div>
+        <label for="publisher" class="block font-medium">Publisher:</label>
+        <select name="publisher" id="publisher" required
+                class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select a publisher</option>
+          <option value="Seven Seas" {% if series['publisher'] == 'Seven Seas' %}selected{% endif %}>Seven Seas</option>
+          <option value="Yen Press" {% if series['publisher'] == 'Yen Press' %}selected{% endif %}>Yen Press</option>
+          <option value="VIZ Media" {% if series['publisher'] == 'VIZ Media' %}selected{% endif %}>VIZ Media</option>
+          <option value="Kodansha" {% if series['publisher'] == 'Kodansha' %}selected{% endif %}>Kodansha</option>
+          <option value="J-Novel Club" {% if series['publisher'] == 'J-Novel Club' %}selected{% endif %}>J-Novel Club</option>
+          <option value="Square Enix" {% if series['publisher'] == 'Square Enix' %}selected{% endif %}>Square Enix</option>
+          <option value="Dark Horse" {% if series['publisher'] == 'Dark Horse' %}selected{% endif %}>Dark Horse</option>
+          <option value="One Peace Books" {% if series['publisher'] == 'One Peace Books' %}selected{% endif %}>One Peace Books</option>
+          <option value="Cross Infinite World" {% if series['publisher'] == 'Cross Infinite World' %}selected{% endif %}>Cross Infinite World</option>
+          <option value="KaitenBooks" {% if series['publisher'] == 'KaitenBooks' %}selected{% endif %}>KaitenBooks</option>
+        </select>
+      </div>      
+    
+      <div>
+        <label for="status" class="block font-medium">Status:</label>
+        <select name="status" id="status"
+                class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="Collecting" {% if series['status'] == "Collecting" %}selected{% endif %}>Collecting</option>
+          <option value="Completed" {% if series['status'] == "Completed" %}selected{% endif %}>Completed</option>
+          <option value="Interested" {% if series['status'] == "Interested" %}selected{% endif %}>Interested</option>
+          <option value="On Hold" {% if series['status'] == "On Hold" %}selected{% endif %}>On Hold</option>
+        </select>
+      </div>
+    
+      <div>
+        <label for="total_volumes" class="block font-medium">Total Volumes:</label>
+        <input type="text" name="total_volumes" id="total_volumes" value="{{ series['total_volumes'] }}"
+               class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    
+      <!-- Series URL Input -->
+      <div>
+        <label for="url" class="block font-medium">Series URL:</label>
+        <input type="text" name="url" id="url" value="{{ series['url'] }}"
+               class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+               placeholder="Enter the URL of the series">
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Tags:</label>
+        <select name="tags[]" id="tags-select" multiple
+                class="w-full border border-gray-300 p-2 rounded h-40 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          {% for tag, color_class in common_tags.items() %}
+            <option value="{{ tag }}"
+                    {% if tag in (series['tags'] or '').split(',') %}selected{% endif %}>
+              {{ tag }}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="text-sm text-gray-500 mt-1">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</p>
+      </div>
+    
+      <div class="flex justify-between items-center mt-6">
+        <a href="{{ url_for('index') }}" class="text-blue-600 hover:underline">← Back</a>
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Save Changes
+        </button>
+      </div>
+    </form>
+    
+  </div>
+
+</body>
+</html>

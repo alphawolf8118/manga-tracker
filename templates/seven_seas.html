@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seven Seas Releases</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 p-6">
+    <h1 class="text-2xl font-bold mb-4">Upcoming Seven Seas Releases</h1>
+
+    <table class="min-w-full bg-white rounded shadow">
+        <thead class="bg-gray-200 text-left">
+            <tr>
+                <th class="p-2">Title</th>
+                <th class="p-2">Release Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for release in releases %}
+            <tr class="border-t">
+                <td class="p-2">{{ release.title }}</td>
+                <td class="p-2">{{ release.release_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

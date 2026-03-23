@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head>
+    <title>Manga Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Manga Tracker</h1>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('add_series') }}">Add Series</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

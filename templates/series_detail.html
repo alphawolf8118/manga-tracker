@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ series['title'] }} - Volumes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Choices.js for beautiful multi-select in modal -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans p-6">
+
+  <p class="text-gray-700"><strong>Publisher:</strong> {{ series["publisher"] or "N/A" }}</p>
+
+  <!-- Series Tags Display -->
+  <div class="mt-4">
+    <h3 class="font-medium text-gray-700">Tags:</h3>
+    <div class="flex flex-wrap gap-2 mt-2">
+      {% if series['tags'] %}
+        {% for tag in series['tags'].split(',') %}
+          {% set tag_clean = tag.strip() %}
+          {% set color_class = common_tags.get(tag_clean, "bg-gray-100 text-gray-800 border-gray-300") %}
+          <span class="inline-block {{ color_class }} text-sm font-medium px-3 py-1 rounded-full">
+            {{ tag_clean }}
+          </span>
+        {% endfor %}
+      {% else %}
+        <span class="text-gray-500 italic">No tags yet</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">{{ series['title'] }} – Volume Tracker</h1>
+
+    <!-- URL Input Section -->
+    <div class="mt-4">
+      <label for="series_url" class="block font-medium">URL:</label>
+      <a href="{{ series['url'] }}" target="_blank" class="text-blue-600 hover:underline flex items-center space-x-2">
+        <span>Visit Series Website</span>
+        <span class="text-xl font-semibold">↗️</span>
+      </a>
+    </div>
+
+    <!-- Add Volume Button -->
+    <a href="{{ url_for('add_volume', series_id=series['id']) }}"
+       class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4">
+      ➕ Add Volume
+    </a>
+
+    <!-- Update Series Button -->
+    <button onclick="updateSeries({{ series['id'] }})" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4">
+      🔄 Update Series
+    </button>
+    
+    <button onclick="checkBnInventory({{ series.id }})"
+      class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 mt-4">
+      🏬 Check B&N Inventory
+    </button>
+
+    <!-- Message Div to Show Success/Error -->
+    <div id="update-message" class="mt-4 text-center text-sm"></div>
+
+    <table class="w-full table-auto border mt-4">
+      <thead>
+        <tr class="bg-gray-200 text-left">
+          <th class="p-2">Volume</th>
+          <th class="p-2">Purchased</th>
+          <th class="p-2">Base Price</th>
+          <th class="p-2">Amazon Price</th>
+          <th class="p-2">Discount %</th>
+          <th class="p-2">B&N Location</th>
+          <th class="p-2">Release Date</th>
+          <th class="p-2">ISBN</th>
+          <th class="p-2">Tags</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for vol in volumes %}
+          {% set discount_class = (
+              "bg-green-100 text-green-800" if vol["discount_pct"] > 10 else
+              "bg-yellow-100 text-yellow-800" if vol["discount_pct"] == 10 else
+              "bg-red-100 text-red-800"
+          ) %}
+          {% set release_color = "bg-green-100" if vol["release_date"] and vol["release_date"] <= now else "bg-yellow-100" %}
+          <tr class="{{ 'bg-green-300' if vol['purchased'] else '' }}">
+            <td class="border p-2">{{ vol["volume_number"] }}</td>
+            <td class="border p-2 text-center">
+              <input type="checkbox"
+                     class="accent-green-600 h-5 w-5 transition duration-200"
+                     {% if vol["purchased"] %}checked{% endif %}
+                     onchange="togglePurchased({{ vol['id'] }}, this)">
+            </td>
+            <td class="border p-2">${{ "%.2f"|format(vol["base_price"]|float) if vol["base_price"] else "0.00" }}</td>
+            <td class="border p-2">${{ "%.2f"|format(vol["amazon_price"]|float) if vol["amazon_price"] else "0.00" }}</td>
+            <td class="border p-2 font-semibold {{ discount_class }}">
+              ${{ "%.2f"|format(vol["discount_abs"]) }}
+              ({{ "%.2f"|format(vol["discount_pct"]) }}%)
+            </td>
+            <td class="border p-2" id="bn-location-cell-{{ vol['id'] }}">{{ vol["bn_location"] }}</td>
+            <td class="border p-2 {{ release_color }}">{{ vol["release_date"] }}</td>
+            <td class="border p-2 isbn-cell" id="isbn-cell-{{ vol['id'] }}">
+              <span class="isbn-display">
+                {{ vol["isbn"] or '—' }}
+              </span>
+              <input type="text" class="isbn-input hidden w-full border border-gray-300 p-1 rounded text-sm"
+                    value="{{ vol['isbn'] or '' }}"
+                    placeholder="Enter ISBN">
+            </td>
+
+            <!-- Volume Tags Column -->
+            <td class="border p-2 flex flex-wrap gap-1 tags-cell">
+              {% if vol["tags"] %}
+                {% for tag in vol["tags"].split(",") %}
+                  {% set tag_clean = tag.strip() %}
+                  {% set color_class = common_tags.get(tag_clean, "bg-gray-100 text-gray-800 border-gray-300") %}
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ color_class }}">
+                    {{ tag_clean }}
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="text-gray-400 italic">—</span>
+              {% endif %}
+            </td>
+
+            <td class="border p-2 flex space-x-2">
+              <a href="{{ url_for('edit_volume', volume_id=vol['id']) }}"
+                 class="text-blue-600 hover:underline">Edit</a>
+              <form method="post" action="{{ url_for('delete_volume', volume_id=vol['id']) }}"
+                    onsubmit="return confirm('Are you sure you want to delete this volume?');">
+                <button type="submit" class="text-red-600 hover:underline">Delete</button>
+              </form>
+              <form method="post" action="{{ url_for('scrape_volume', volume_id=vol['id']) }}" style="display:inline;">
+                <button type="submit" class="text-blue-600 hover:underline" title="Scrape this volume">🔄</button>
+              </form>
+              <form method="post" action="{{ url_for('check_bn_inventory_volume_route', volume_id=vol['id']) }}" style="display:inline;" onsubmit="return checkBnInventoryVolume(event, {{ vol['id'] }})">
+                <button type="submit" class="text-purple-600 hover:underline" title="Check B&N Inventory">🏬</button>
+              </form>
+              <form method="get" action="{{ url_for('manual_bn_parse', volume_id=vol['id']) }}" style="display:inline;">
+                <button type="submit" class="text-indigo-600 hover:underline ml-1" title="Manual paste parser (fallback)">
+                  📋
+                </button>
+              </form>
+
+              <!-- Tags Button (opens modal) -->
+              <button onclick="openTagModal({{ vol['id'] }}, '{{ vol['tags'] | e if vol['tags'] else '' }}')"
+                      class="text-purple-600 hover:underline" title="Edit Tags">
+                🏷️ Tags
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-6">
+      <a href="{{ url_for('index') }}" class="text-blue-600 hover:underline">← Back to all series</a>
+    </div>
+  </div>
+
+  <!-- Tag Edit Modal -->
+  <div id="tag-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-xl">
+      <h3 class="text-lg font-bold mb-4">Select Tags for Volume</h3>
+
+      <!-- Predefined multi-select dropdown -->
+      <select id="modal-tags-select" multiple class="w-full border border-gray-300 p-2 rounded h-40 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {% for tag, color_class in common_tags.items() %}
+          <option value="{{ tag }}">{{ tag }}</option>
+        {% endfor %}
+      </select>
+
+      <p class="text-sm text-gray-500 mt-2">Hold Ctrl/Cmd to select multiple</p>
+
+      <!-- NEW: Clear All button -->
+      <button onclick="clearAllTags()" class="mt-3 text-red-600 hover:text-red-800 text-sm font-medium">
+        Clear All Tags
+      </button>
+
+      <div class="flex justify-end space-x-3 mt-6">
+        <button onclick="closeTagModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+          Cancel
+        </button>
+        <button onclick="saveVolumeTags()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Helper JS -->
+  <script>
+  let currentVolumeId = null;
+
+  function clearAllTags() {
+    const select = document.getElementById('modal-tags-select');
+    for (let option of select.options) {
+      option.selected = false;
+    }
+    // Optional: Update Choices.js UI if using it
+    if (typeof Choices !== 'undefined') {
+      const choicesInstance = Choices.getInstance(select);
+      if (choicesInstance) choicesInstance.clearChoices();
+    }
+  }
+
+  function openTagModal(volumeId, currentTags = '') {
+    currentVolumeId = volumeId;
+    
+    // Pre-select existing tags
+    const select = document.getElementById('modal-tags-select');
+    const options = select.options;
+    for (let i = 0; i < options.length; i++) {
+      options[i].selected = currentTags.split(',').map(t => t.trim()).includes(options[i].value.trim());
+    }
+
+    document.getElementById('tag-modal').classList.remove('hidden');
+  }
+
+  function closeTagModal() {
+    document.getElementById('tag-modal').classList.add('hidden');
+  }
+
+  function saveVolumeTags() {
+    const select = document.getElementById('modal-tags-select');
+    const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+    const tagsStr = selected.join(',');
+
+    fetch(`/update-volume-tags/${currentVolumeId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tags: tagsStr })
+    })
+    .then(response => {
+      if (response.ok) {
+        closeTagModal();
+        alert("Tags saved!");
+        location.reload();  // Show updated badges
+      } else {
+        alert("Failed to save");
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Error saving tags");
+    });
+  }
+  </script>
+
+  <script>
+    function updateSeries(seriesId) {
+      fetch(`/update-series/${seriesId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("update-message").innerText = data;
+        document.getElementById("update-message").classList.add('text-green-600'); // Success message color
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById("update-message").innerText = "An error occurred.";
+        document.getElementById("update-message").classList.add('text-red-600'); // Error message color
+      });
+    }
+
+    function togglePurchased(volumeId, checkbox) {
+      fetch(`/toggle-purchased/${volumeId}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const row = checkbox.closest("tr");
+        if (data.purchased) {
+          row.classList.add("bg-green-300");
+          // Clear B&N location cell
+          const bnCell = document.getElementById(`bn-location-cell-${volumeId}`);
+          if (bnCell) bnCell.textContent = "";
+        } else {
+          row.classList.remove("bg-green-300");
+        }
+      });
+    }
+  </script>
+
+<script>
+function checkBnInventory(seriesId) {
+    document.getElementById("update-message").innerText = "Checking B&N inventory...";
+    document.getElementById("update-message").className = "mt-4 text-blue-600 text-center text-sm";
+
+    fetch(`/check-bn-inventory/${seriesId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        document.getElementById("update-message").innerText = "An error occurred.";
+        document.getElementById("update-message").className = "mt-4 text-red-600 text-center text-sm";
+    });
+}
+</script>
+
+<script>
+function checkBnInventoryVolume(event, volumeId) {
+    event.preventDefault();
+    fetch(`/check-bn-inventory-volume/${volumeId}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || "Error checking inventory.");
+        }
+    });
+    return false;
+}
+</script>
+
+<script>
+document.querySelectorAll('.isbn-cell').forEach(cell => {
+  const display = cell.querySelector('.isbn-display');
+  const input = cell.querySelector('.isbn-input');
+
+  display.addEventListener('click', () => {
+    display.classList.add('hidden');
+    input.classList.remove('hidden');
+    input.focus();
+    input.select();
+  });
+
+  input.addEventListener('blur', saveISBN);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      input.blur();  // Trigger save on Enter
+    } else if (e.key === 'Escape') {
+      input.value = display.textContent.trim() === '—' ? '' : display.textContent.trim();
+      input.classList.add('hidden');
+      display.classList.remove('hidden');
+    }
+  });
+
+  function saveISBN() {
+    const isbn = input.value.trim();
+    const volumeId = cell.closest('tr').querySelector('input[type="checkbox"]').getAttribute('onchange').match(/\d+/)[0]; // crude but works if checkbox onchange has vol id
+
+    if (isbn === display.textContent.trim() || (isbn === '' && display.textContent === '—')) {
+      // No change → revert
+      input.classList.add('hidden');
+      display.classList.remove('hidden');
+      return;
+    }
+
+    fetch(`/update-volume-isbn/${volumeId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isbn })
+    })
+    .then(response => {
+      if (response.ok) {
+        display.textContent = isbn || '—';
+        input.classList.add('hidden');
+        display.classList.remove('hidden');
+      } else {
+        alert("Failed to save ISBN");
+        input.value = display.textContent.trim() === '—' ? '' : display.textContent.trim();
+      }
+    })
+    .catch(() => {
+      alert("Error saving");
+      input.value = display.textContent.trim() === '—' ? '' : display.textContent.trim();
+    });
+  }
+});
+</script>
+
+</body>
+</html>
