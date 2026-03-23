@@ -23,13 +23,14 @@ The same engineering principles apply directly to AI workflows: reproducible pip
 ## 🧱 Architecture Overview
 
 - **Python + SQLite** for a simple, reliable local datastore  
-- **Modular scrapers** (Seven Seas, Barnes & Noble) using `requests` + `BeautifulSoup`  
+- **Generalized publisher scraper** (originally built for Seven Seas, now extended to multiple publishers) using `requests` + `BeautifulSoup`.
+- **Barnes & Noble parser** replacing the original scraper after the site increased automation protections.  
 - **Schema helpers** and migration scripts for evolving the database  
 - **Flask UI** for browsing and interacting with the dataset  
 - **Separation of concerns** between scraping, data models, and presentation  
 - **Selector tests** to validate scraper behavior
 
-This mirrors the structure of AI data prep pipelines: clean modules, predictable transformations, and maintainable workflows.
+This mirrors the structure of AI data prep pipelines: modular components, predictable transformations, maintainable workflows, and the ability to pivot between scraping and parsing as sites evolve their automation protections.
 
 ---
 
