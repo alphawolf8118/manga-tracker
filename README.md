@@ -39,8 +39,11 @@ This mirrors the structure of AI data prep pipelines: modular components, predic
 - `app.py` — Flask interface  
 - `models.py` — schema definitions and helpers  
 - `db.py` — SQLite utilities  
-- `seven_seas/` — modular scraper package  
-- `static/` + `templates/` — UI assets  
+- `seven_seas/` — shared scraper utilities and helper functions
+- `seven_seas_scraper.py` — generalized multi‑publisher scraper using `requests` + `BeautifulSoup`
+- `bn_inventory_scraper.py` — legacy Barnes & Noble scraper (superseded by the HTML parser)
+- `static/` — placeholder for static assets (currently unused)
+- `templates/` — HTML templates for the Flask UI
 - `test_*.py` — selector and scraper tests  
 
 The local database (`manga.db`) is intentionally excluded from version control.
