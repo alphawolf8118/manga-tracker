@@ -1,6 +1,5 @@
 # Manga Tracker
 
-![Screenshot](screenshots/Manga-Tracker-Main.png)
 
 ![Screenshot](screenshots/Manga-Tracker-Series.png)
 
