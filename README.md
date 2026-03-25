@@ -1,5 +1,11 @@
 # Manga Tracker
 
+![Screenshot](screenshots/Manga-Tracker-Main.png)
+
+![Screenshot](screenshots/Manga-Tracker-Series.png)
+
+![Screenshot](screenshots/Manga-Tracker-Volumes.png)
+
 A modular Python automation tool for tracking manga series and volumes using a local SQLite database.  
 This project demonstrates practical experience in building data pipelines, scraper automation, schema design, and lightweight web interfaces — all foundational skills for AI automation and AI infrastructure engineering.
 
